@@ -1,0 +1,31 @@
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://www.ncbi.nlm.nih.gov/protein/?term=hypothecial+protein"
+response = requests.get(url)
+soup = BeautifulSoup(response.text, 'html.parser')
+
+proteins = soup.find_all('tr', class_=lambda x: x and 'result' in x)
+
+for protein in proteins:
+    locus = protein.find('td', class_='sequence-locus').text
+
+    details = protein.find('a')['href']
+    response = requests.get(details)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    keywords = ''
+    authors = ''
+    origin = ''
+
+    for keyword in soup.find_all('span', itemprop='keywords'):
+        keywords += keyword.text + ' '
+
+    for author in soup.find_all('span', itemprop='author'):
+        authors += author.text + ' '
+
+    for origin in soup.find_all('span', itemprop='organism'):
+        origin = origin.text
+
+    print(f'Locus: {locus}\nKeywords: {keywords}\nAuthors: {authors}\nOrigin: {origin}\n')
+    
